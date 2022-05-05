@@ -16,11 +16,19 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 public class FireSparkEntity extends ProjectileItemEntity {
 
-    private static int LIFETIME = 5;
-    private static float HIT_DAMAGE = 2f;
-    private static int IGNITE_DURATION = 3;
+    // TODO: Use config
+    public static int DEFAULT_LIFETIME = 5;
+    public static float DEFAULT_HIT_DAMAGE = 2f;
+    public static int DEFAULT_IGNITE_DURATION_MIN = 2;
+    public static int DEFAULT_IGNITE_DURATION_RANGE = 5;
 
-    private int tickLeft = LIFETIME;
+    private int lifetime = DEFAULT_LIFETIME;
+    private float hitDamage = DEFAULT_HIT_DAMAGE;
+
+    private int igniteDurationMin = DEFAULT_IGNITE_DURATION_MIN;
+    private int igniteDurationRange = DEFAULT_IGNITE_DURATION_RANGE;
+
+    private int tickLeft = lifetime;
 
     public FireSparkEntity(EntityType<FireSparkEntity> entityType, World world) {
         super(entityType, world);
@@ -47,8 +55,10 @@ public class FireSparkEntity extends ProjectileItemEntity {
     }
 
     protected void onEntityHit(Entity entity) {
-        entity.attackEntityFrom(new IndirectEntityDamageSource("magic", this, getShooter()).setFireDamage().setMagicDamage(), HIT_DAMAGE);
-        entity.setFire(IGNITE_DURATION);
+        entity.attackEntityFrom(new IndirectEntityDamageSource("magic", this,
+                getShooter()).setFireDamage().setMagicDamage(), hitDamage);
+
+        entity.setFire(getRandomIgniteDuration());
     }
 
     @Override
@@ -57,11 +67,6 @@ public class FireSparkEntity extends ProjectileItemEntity {
             remove();
         }
         tickLeft -= 1;
-
-        // Particles
-        for (int count = 0; count < 8; ++count) {
-            world.addParticle(ParticleTypes.FLAME, getPosXRandom(0.5), getPosYRandom(), getPosZRandom(0.5), 0, 0, 0);
-        }
 
         // Movement
         Vector3d vector3d = this.getMotion();
@@ -72,8 +77,12 @@ public class FireSparkEntity extends ProjectileItemEntity {
         double d1 = this.getPosZ() + vector3d.z;
         this.setPosition(d2, d0, d1);
 
-        if (world.isRemote) // is client side
+        if (world.isRemote) {
+            for (int count = 0; count < 8; ++count) {
+                world.addParticle(ParticleTypes.FLAME, getPosXRandom(0.5), getPosYRandom(), getPosZRandom(0.5), 0, 0, 0);
+            }
             return;
+        }
 
         // Collision detection
         AxisAlignedBB motionBB = getBoundingBox().expand(getMotion());
@@ -85,5 +94,49 @@ public class FireSparkEntity extends ProjectileItemEntity {
     @Override
     public IPacket<?> createSpawnPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    public int getRandomIgniteDuration() {
+        return igniteDurationMin + rand.nextInt(igniteDurationRange);
+    }
+
+    public int getIgniteDurationMin() {
+        return igniteDurationMin;
+    }
+
+    public void setIgniteDurationMin(int igniteDurationMin) {
+        this.igniteDurationMin = igniteDurationMin;
+    }
+
+    public int getIgniteDurationRange() {
+        return igniteDurationRange;
+    }
+
+    public void setIgniteDurationRange(int igniteDurationRange) {
+        this.igniteDurationRange = igniteDurationRange;
+    }
+
+    public int getLifetime() {
+        return lifetime;
+    }
+
+    public void setLifetime(int lifetime) {
+        this.lifetime = lifetime;
+    }
+
+    public float getHitDamage() {
+        return hitDamage;
+    }
+
+    public void setHitDamage(float hitDamage) {
+        this.hitDamage = hitDamage;
+    }
+
+    public int getTickLeft() {
+        return tickLeft;
+    }
+
+    public void setTickLeft(int tickLeft) {
+        this.tickLeft = tickLeft;
     }
 }

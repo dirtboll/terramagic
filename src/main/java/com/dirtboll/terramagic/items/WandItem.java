@@ -43,6 +43,7 @@ public abstract class WandItem extends BaseItem {
         ItemStack wand = player.getHeldItem(hand);
         WandCapability capability = getWandCapability(wand);
         if (capability.cast() && cast(player, hand)) {
+            capability.setCooldown(getCooldown());
             return ActionResult.resultPass(wand);
         } else {
             return ActionResult.resultFail(wand);
