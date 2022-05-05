@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.dirtboll.terramagic.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "terramagic.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
